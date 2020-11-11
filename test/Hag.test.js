@@ -30,4 +30,11 @@ contract("HAG Test", async (accounts) => {
         expect(instance.balanceOf(recepient)).to.eventually.be.a.bignumber.equal(new BN(sentToken));
     });
 
+    it("It is not possible to send more tokens than available in total supply", async () => {
+        let instance = await HAG.deployed();
+        let deployerAccountBalance = await instance.balanceOf(deployerAccount);
+        expect(instance.transfer(recepient, new BN(deployerAccountBalance + 1))).to.eventually.be.rejected;
+        expect(instance.balanceOf(deployerAccount)).to.eventually.be.a.bignumber.equal(deployerAccountBalance);
+    });
+
 });
