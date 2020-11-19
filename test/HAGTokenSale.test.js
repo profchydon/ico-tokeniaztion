@@ -1,5 +1,6 @@
 const HAG = artifacts.require("HAG");
 const HAGTokenSale = artifacts.require("HAGTokenSale");
+const KycContract = artifacts.require("KycContract");
 
 require("dotenv").config({path: "../.env"});
 
@@ -28,7 +29,9 @@ contract("HAGTokenSale Test", async (accounts) => {
     it("should be able to buy tokens", async () => {
         let tokenInstance = await HAG.deployed();
         let tokenSaleInstance = await HAGTokenSale.deployed();
+        let kycInstance = await KycContract.deployed();
         let balanceBefore = await tokenInstance.balanceOf(deployerAccount);
+        await kycInstance.setKycCompleted(deployerAccount,{from:  deployerAccount});
         expect(tokenSaleInstance.sendTransaction({ from: deployerAccount, value: web3.utils.toWei("1", "wei")})).to.be.fulfilled;
         expect(tokenInstance.balanceOf(deployerAccount)).to.eventually.be.a.bignumber.equal(balanceBefore.add(new BN(1)));
     });
