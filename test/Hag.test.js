@@ -2,13 +2,9 @@ const HAG = artifacts.require("HAG");
 
 require("dotenv").config({path: "../.env"});
 
-var chai = require("chai");
-const BN = web3.utils.BN;
-const chaiBN = require("chai-bn")(BN);
-chai.use(chaiBN);
+const chai = require('./chaiConfig');
 
-var chaiAsPromised = require("chai-as-promised");
-chai.use(chaiAsPromised);
+const BN = web3.utils.BN;
 
 const expect = chai.expect;
 
@@ -23,7 +19,7 @@ contract("HAG Test", async (accounts) => {
     it("All tokens in account 0", async () => {
         let instance = this.HAGToken;
         let totalSupply = await instance.totalSupply();
-        expect(instance.balanceOf(deployerAccount)).to.eventually.be.a.bignumber.equal(totalSupply);
+        return expect(instance.balanceOf(deployerAccount)).to.eventually.be.a.bignumber.equal(totalSupply);
     });
 
     it("Is possible to send tokens between accounts", async () => {
@@ -33,14 +29,14 @@ contract("HAG Test", async (accounts) => {
         expect(instance.balanceOf(deployerAccount)).to.eventually.be.a.bignumber.equal(totalSupply);
         expect(instance.transfer(recepient, sentToken)).to.eventually.be.fulfilled;
         expect(instance.balanceOf(deployerAccount)).to.eventually.be.a.bignumber.equal(totalSupply.sub(new BN(sentToken)));
-        expect(instance.balanceOf(recepient)).to.eventually.be.a.bignumber.equal(new BN(sentToken));
+        return expect(instance.balanceOf(recepient)).to.eventually.be.a.bignumber.equal(new BN(sentToken));
     });
 
     it("It is not possible to send more tokens than available in total supply", async () => {
         let instance = await this.HAGToken;
         let deployerAccountBalance = await instance.balanceOf(deployerAccount);
         expect(instance.transfer(recepient, new BN(deployerAccountBalance + 1))).to.eventually.be.rejected;
-        expect(instance.balanceOf(deployerAccount)).to.eventually.be.a.bignumber.equal(deployerAccountBalance);
+        return expect(instance.balanceOf(deployerAccount)).to.eventually.be.a.bignumber.equal(deployerAccountBalance);
     });
 
 });
