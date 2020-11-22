@@ -7,7 +7,7 @@ import getWeb3 from "./getWeb3";
 import "./App.css";
 
 class App extends Component {
-  state = { loaded: false, kycAddress: null };
+  state = { loaded: false, kycAddress: null, tokenAddress: null, hagToken: null, userToken: 0, tokenName: null, tokenQtyToBuy: null };
 
   componentDidMount = async () => {
     try {
@@ -35,9 +35,11 @@ class App extends Component {
         KycContract.networks[this.networkId] && KycContract.networks[this.networkId].address,
       );
 
+      this.listenToTokenTransfer();
+
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
-      this.setState({ loaded: true });
+      this.setState({ loaded: true, tokenAddress: HAGTokenSale.networks[this.networkId].address, hagToken: HAG.networks[this.networkId].address }, this.handleUpdateUserToken);
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -47,9 +49,29 @@ class App extends Component {
     }
   };
 
+  handleUpdateUserToken = async () => {
+    let userToken = await this.HAGInstance.methods.balanceOf(this.accounts[0]).call();
+    let tokenName = await this.HAGInstance.methods.name().call();
+    this.setState({ userToken, tokenName });
+  }
+
+  handleBuyToken = async () => {
+    const { tokenQtyToBuy } = this.state;
+    await this.HAGTokenSaleInstance.methods.buyTokens(this.accounts[0]).send({ from: this.accounts[0], value: this.web3.utils.toWei(tokenQtyToBuy, "wei")});
+  }
+
+  listenToTokenTransfer = () => {
+    this.HAGInstance.events.Transfer({ to: this.accounts[0] }).on("data", this.handleUpdateUserToken);
+  }
+
   handleInput = (event) => {
     const { value } = event.target;
     this.setState({ kycAddress: value });
+  }
+
+  handleInputTokenQtyToBuy = (event) => {
+    const { value } = event.target;
+    this.setState({ tokenQtyToBuy: value });
   }
 
   handleKycWhitelisting = async () => {
@@ -59,7 +81,7 @@ class App extends Component {
   }
 
   render() {
-    const { loaded, kycAddress } = this.state;
+    const { loaded, kycAddress, tokenAddress, hagToken, userToken, tokenName, tokenQtyToBuy } = this.state;
     if (!loaded) {
       return <div>Loading Web3, accounts, and contract...</div>;
     }
@@ -74,6 +96,16 @@ class App extends Component {
         <button class="btn" onClick={this.handleKycWhitelisting}>
           Submit    
         </button>
+        <h3>To buy 1 HAG tokens, send 0.0019 Ether to this address {tokenAddress} / {hagToken}</h3>
+        <h3>You have {userToken} {tokenName}</h3>
+        <div class="form-group">
+          <label for="">Enter number of tokens to buy</label>
+          <input type="text" class="form-control" name="tokenQtyToBuy" id="tokenQtyToBuy" value={tokenQtyToBuy} onChange={this.handleInputTokenQtyToBuy}/>
+        </div>
+        <button class="btn" onClick={this.handleBuyToken}>
+          Buy Token    
+        </button>
+        
       </div>
     );
   }

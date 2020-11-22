@@ -19,6 +19,24 @@ module.exports = {
       provider: () =>
         new HDWalletProvider(Mnemonics, "http://127.0.0.1:7545", AccountIndex),
         network_id: 5777,
+    },
+    ropsten_infura: {
+      // must be a thunk, otherwise truffle commands may hang in CI
+      provider: () =>
+        new HDWalletProvider(Mnemonics, "https://ropsten.infura.io/v3/fa1f5ef56cea421daf1d279a36317487", AccountIndex),
+        network_id: 3,
+    },
+    goerli_infura: {
+      // must be a thunk, otherwise truffle commands may hang in CI
+      provider: () =>
+        new HDWalletProvider(Mnemonics, "https://goerli.infura.io/v3/fa1f5ef56cea421daf1d279a36317487", AccountIndex),
+        network_id: 5,
+    },
+    rinkeby_infura: {
+      // must be a thunk, otherwise truffle commands may hang in CI
+      provider: () =>
+        new HDWalletProvider(Mnemonics, "https://rinkeby.infura.io/v3/fa1f5ef56cea421daf1d279a36317487", AccountIndex),
+        network_id: 4,
     }
   },
   compilers: {
